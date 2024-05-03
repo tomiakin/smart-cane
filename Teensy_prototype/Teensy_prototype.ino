@@ -44,8 +44,8 @@ int end_echo = 13000;  // Receive for 10ms.
 
 // SAMPLE PARAMETERS
 #define numSamples array_size                              // Must be a power of 2
-#define samplingFreq 124800                          // Hz
-#define signal_length 63                             // length of input signal for cross correlation (CC)
+#define samplingFreq 125000                          // Hz
+#define signal_length 26                             // length of input signal for cross correlation (CC)
 #define convLength (numSamples + signal_length - 1)  // length of array for convolution in CC
 
 unsigned int sampling_period_us;
