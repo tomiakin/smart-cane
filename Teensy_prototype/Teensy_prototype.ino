@@ -58,8 +58,8 @@ double convArray[convLength];
 ArduinoFFT<double> FFT(vReal, vImag, numSamples, samplingFreq);
 
 // Model Parameters
-const double speed_of_sound = 340;                           // in meters per second
-const double max_distance = 3;                               // in meters
+const double speed_of_sound = 343;                           // in meters per second
+const double max_distance = 2.5;                               // in meters
 double cutoff_time = 2*(max_distance / speed_of_sound) * 1e6;  // in microseconds
 const double trans_time = 1000;                              // in microseconds (for removing the transmit signal)
 
@@ -310,128 +310,128 @@ void send_data(double number) {
   Wire2.endTransmission();  // stop transmitting
 }
 
-// double processSignal() {
+double processSignal() {
 
-//   // Generate time array
-//   sampling_period_us = (1.0 / samplingFreq) * 1e6;
-//   for (int i = 0; i < numSamples; i++) {
-//     timeArray[i] = i * sampling_period_us;
-//   }
+  // Generate time array
+  sampling_period_us = (1.0 / samplingFreq) * 1e6;
+  for (int i = 0; i < numSamples; i++) {
+    timeArray[i] = i * sampling_period_us;
+  }
 
-//   // Perform FFT
-//   FFT.compute(FFTDirection::Forward);
+  // Perform FFT
+  FFT.compute(FFTDirection::Forward);
 
-//   // Delete the second half of the arrays
-//   for (int i = numSamples / 2; i < numSamples; i++) {
-//     vReal[i] = 0;
-//     vImag[i] = 0;
-//   }
+  // Delete the second half of the arrays
+  for (int i = numSamples / 2; i < numSamples; i++) {
+    vReal[i] = 0;
+    vImag[i] = 0;
+  }
 
-//   // Calculate Hanning window
-//   for (int i = 0; i < numSamples / 2; i++) {
-//     double x = (double)i / (numSamples / 2 - 1);
-//     double y = 0.5 * (1 + cos((x - tran_freq / max_freq) / (bandwidth / max_freq) * PI));
-//     hanning_window[i] = y * ((x >= (tran_freq / max_freq - bandwidth / max_freq)) && (x <= (tran_freq / max_freq + bandwidth / max_freq)));
-//   }
+  // Calculate Hanning window
+  for (int i = 0; i < numSamples / 2; i++) {
+    double x = (double)i / (numSamples / 2 - 1);
+    double y = 0.5 * (1 + cos((x - tran_freq / max_freq) / (bandwidth / max_freq) * PI));
+    hanning_window[i] = y * ((x >= (tran_freq / max_freq - bandwidth / max_freq)) && (x <= (tran_freq / max_freq + bandwidth / max_freq)));
+  }
 
-//   // Apply Hanning window to real and imaginary parts separately
-//   for (int i = 0; i < numSamples / 2; i++) {
-//     vReal[i] *= hanning_window[i];
-//     vImag[i] *= hanning_window[i];
-//   }
+  // Apply Hanning window to real and imaginary parts separately
+  for (int i = 0; i < numSamples / 2; i++) {
+    vReal[i] *= hanning_window[i];
+    vImag[i] *= hanning_window[i];
+  }
 
-//   // Perform Inverse FFT
-//   FFT.compute(FFTDirection::Reverse);
+  // Perform Inverse FFT
+  FFT.compute(FFTDirection::Reverse);
 
-//   // Compute the maximum magnitude of vReal and vImag
-//   double max_magnitude = 0;
-//   for (int i = 0; i < numSamples; i++) {
-//     double magnitude = sqrt(vReal[i] * vReal[i] + vImag[i] * vImag[i]);
-//     if (magnitude > max_magnitude) {
-//       max_magnitude = magnitude;
-//     }
-//   }
+  // Compute the maximum magnitude of vReal and vImag
+  double max_magnitude = 0;
+  for (int i = 0; i < numSamples; i++) {
+    double magnitude = sqrt(vReal[i] * vReal[i] + vImag[i] * vImag[i]);
+    if (magnitude > max_magnitude) {
+      max_magnitude = magnitude;
+    }
+  }
 
-//   // Normalize vReal and vImag
-//   for (int i = 0; i < numSamples; i++) {
-//     vReal[i] /= max_magnitude;
-//     vImag[i] /= max_magnitude;
-//   }
+  // Normalize vReal and vImag
+  for (int i = 0; i < numSamples; i++) {
+    vReal[i] /= max_magnitude;
+    vImag[i] /= max_magnitude;
+  }
 
 
-//   // Find index of cutoff
-//   double min_cutoff_time = abs(timeArray[0] - cutoff_time);
-//   int index_cutoff = 0;
-//   for (int i = 1; i < numSamples; i++) {
-//     if (abs(timeArray[i] - cutoff_time) < min_cutoff_time) {
-//       min_cutoff_time = abs(timeArray[i] - cutoff_time);
-//       index_cutoff = i;
-//     }
-//   }
+  // Find index of cutoff
+  double min_cutoff_time = abs(timeArray[0] - cutoff_time);
+  int index_cutoff = 0;
+  for (int i = 1; i < numSamples; i++) {
+    if (abs(timeArray[i] - cutoff_time) < min_cutoff_time) {
+      min_cutoff_time = abs(timeArray[i] - cutoff_time);
+      index_cutoff = i;
+    }
+  }
 
-//   // Fill elements from (including) index_cutoff to the end with 0
-//   for (int i = index_cutoff; i < numSamples; i++) {
-//     timeArray[i] = 0;
-//     vReal[i] = 0;
-//     vImag[i] = 0;
-//   }
+  // Fill elements from (including) index_cutoff to the end with 0
+  for (int i = index_cutoff; i < numSamples; i++) {
+    timeArray[i] = 0;
+    vReal[i] = 0;
+    vImag[i] = 0;
+  }
 
-//   // Find dead zone
-//   double trans_time = 1000;  // in microseconds
-//   int index_trans = 0;
-//   double min_trans_time = abs(timeArray[0] - trans_time);
+  // Find dead zone
+  double trans_time = 1000;  // in microseconds
+  int index_trans = 0;
+  double min_trans_time = abs(timeArray[0] - trans_time);
 
-//   for (int i = 1; i < index_cutoff; i++) {
-//     double current_diff = abs(timeArray[i] - trans_time);
-//     if (current_diff < min_trans_time) {
-//       min_trans_time = current_diff;
-//       index_trans = i;
-//     }
-//   }
+  for (int i = 1; i < index_cutoff; i++) {
+    double current_diff = abs(timeArray[i] - trans_time);
+    if (current_diff < min_trans_time) {
+      min_trans_time = current_diff;
+      index_trans = i;
+    }
+  }
 
-//   // Set deadzone for vReal and vImag
-//   for (int i = 0; i <= index_trans; i++) {
-//     vReal[i] = 0;
-//     vImag[i] = 0;
-//   }
+  // Set deadzone for vReal and vImag
+  for (int i = 0; i <= index_trans; i++) {
+    vReal[i] = 0;
+    vImag[i] = 0;
+  }
 
-//   // Sliding Window
+  // Sliding Window
 
-//   int start_index = index_trans;    // starting sliding window (left side)
-//   int end_index = start_index + N;  // starting sliding window (right side)
+  int start_index = index_trans;    // starting sliding window (left side)
+  int end_index = start_index + N;  // starting sliding window (right side)
 
-//   while (true) {
+  while (true) {
 
-//     int tau_temp = 0;
+    int tau_temp = 0;
 
-//     for (int i = start_index; i < end_index; i++) {
-//       if (sqrt(vReal[i] * vReal[i] + vImag[i] * vImag[i]) >= m) {
-//         tau_temp++;
-//       }
-//     }
+    for (int i = start_index; i < end_index; i++) {
+      if (sqrt(vReal[i] * vReal[i] + vImag[i] * vImag[i]) >= m) {
+        tau_temp++;
+      }
+    }
 
-//     if (tau_temp > tau) {  // threshold check of completed window
+    if (tau_temp > tau) {  // threshold check of completed window
 
-//       // Calculate TOF
-//       double TOF = timeArray[start_index];
+      // Calculate TOF
+      double TOF = timeArray[start_index];
 
-//       // Calculate distance
-//       double distance = speed_of_sound * (TOF / 1e6) / 2.0;  // Assuming one-way travel
+      // Calculate distance
+      double distance = speed_of_sound * (TOF / 1e6) / 2.0;  // Assuming one-way travel
 
-//       // Return distance
-//       return distance;
-//     }
+      // Return distance
+      return distance;
+    }
 
-//     // Move the sliding window
-//     start_index += shift;
-//     end_index += shift;
+    // Move the sliding window
+    start_index += shift;
+    end_index += shift;
 
-//     if (end_index >= index_cutoff) {  // check if the next window's end_index will exceed the range
-//       // Return 0 if the range is exceeded
-//       return 0;
-//     }
-//   }
-// }
+    if (end_index >= index_cutoff) {  // check if the next window's end_index will exceed the range
+      // Return 0 if the range is exceeded
+      return 0;
+    }
+  }
+}
 
 double processSignalCC() {
 
