@@ -49,37 +49,37 @@ int end_echo = 13000;  // Receive for 10ms.
 #define convLength (numSamples + signal_length - 1)  // length of array for convolution in CC
 
 unsigned int sampling_period_us;
-double timeArray[numSamples];
-double vReal[numSamples];
-double vImag[numSamples];
-double hanning_window[numSamples / 2];
-double input_signal[signal_length];
-double convArray[convLength];
-ArduinoFFT<double> FFT(vReal, vImag, numSamples, samplingFreq);
+float timeArray[numSamples];
+float vReal[numSamples];
+float vImag[numSamples];
+float hanning_window[numSamples / 2];
+float input_signal[signal_length];
+float convArray[convLength];
+ArduinoFFT<float> FFT(vReal, vImag, numSamples, samplingFreq);
 
 // Model Parameters
-const double speed_of_sound = 343;                           // in meters per second
-const double max_distance = 2.5;                               // in meters
-double cutoff_time = 2*(max_distance / speed_of_sound) * 1e6;  // in microseconds
-const double trans_time = 1000;                              // in microseconds (for removing the transmit signal)
+const float speed_of_sound = 343;                           // in meters per second
+const float max_distance = 2.5;                               // in meters
+float cutoff_time = 2*(max_distance / speed_of_sound) * 1e6;  // in microseconds
+const float trans_time = 1000;                              // in microseconds (for removing the transmit signal)
 
 // Hanning Window Parameters
-const double max_freq = (numSamples / 2.0 - 1) / (numSamples)*samplingFreq;  // max on freq axis after FFT (Hz)
-const double tran_freq = 40000;                                              // Hz (needs to be set)
-const double bandwidth = 5000;                                               // Hz (needs to be set)
+const float max_freq = (numSamples / 2.0 - 1) / (numSamples)*samplingFreq;  // max on freq axis after FFT (Hz)
+const float tran_freq = 40000;                                              // Hz (needs to be set)
+const float bandwidth = 5000;                                               // Hz (needs to be set)
 
 // Sliding Window Parameters
 const int N = 40;  // must not exceed the length of time_SW (relevant length of timeArray see below)
-const double m = 0.1;
-const double tau = N * 0.8;  // second threshold (number of sample points that exceeds the first threshold), this has to be less than N points
+const float m = 0.1;
+const float tau = N * 0.8;  // second threshold (number of sample points that exceeds the first threshold), this has to be less than N points
 const int shift = 1;
 
 // Cross Correlation Paramters
-const double conv_threshold = 0.3;
+const float conv_threshold = 0.3;
 
 int sample_no = 1;
 
-double distance;
+float distance;
 int vibration;
 void setup() {
 
@@ -148,7 +148,7 @@ void loop() {
   }
   //-----------------------------//
   //-----------Process---------//
-  double distance = processSignalCC();
+  float distance = processSignalCC();
   //Print distance on each iteration
   Serial.print(" Distance:  ");
   Serial.print(distance, 4);
@@ -310,7 +310,7 @@ void send_data(double number) {
   Wire2.endTransmission();  // stop transmitting
 }
 
-double processSignal() {
+float processSignal() {
 
   // Generate time array
   sampling_period_us = (1.0 / samplingFreq) * 1e6;
@@ -329,8 +329,8 @@ double processSignal() {
 
   // Calculate Hanning window
   for (int i = 0; i < numSamples / 2; i++) {
-    double x = (double)i / (numSamples / 2 - 1);
-    double y = 0.5 * (1 + cos((x - tran_freq / max_freq) / (bandwidth / max_freq) * PI));
+    float x = (float)i / (numSamples / 2 - 1);
+    float y = 0.5 * (1 + cos((x - tran_freq / max_freq) / (bandwidth / max_freq) * PI));
     hanning_window[i] = y * ((x >= (tran_freq / max_freq - bandwidth / max_freq)) && (x <= (tran_freq / max_freq + bandwidth / max_freq)));
   }
 
@@ -344,9 +344,9 @@ double processSignal() {
   FFT.compute(FFTDirection::Reverse);
 
   // Compute the maximum magnitude of vReal and vImag
-  double max_magnitude = 0;
+  float max_magnitude = 0;
   for (int i = 0; i < numSamples; i++) {
-    double magnitude = sqrt(vReal[i] * vReal[i] + vImag[i] * vImag[i]);
+    float magnitude = sqrt(vReal[i] * vReal[i] + vImag[i] * vImag[i]);
     if (magnitude > max_magnitude) {
       max_magnitude = magnitude;
     }
@@ -360,7 +360,7 @@ double processSignal() {
 
 
   // Find index of cutoff
-  double min_cutoff_time = abs(timeArray[0] - cutoff_time);
+  float min_cutoff_time = abs(timeArray[0] - cutoff_time);
   int index_cutoff = 0;
   for (int i = 1; i < numSamples; i++) {
     if (abs(timeArray[i] - cutoff_time) < min_cutoff_time) {
@@ -377,7 +377,7 @@ double processSignal() {
   }
 
   // Find dead zone
-  double trans_time = 1000;  // in microseconds
+  float trans_time = 1000;  // in microseconds
   int index_trans = 0;
   double min_trans_time = abs(timeArray[0] - trans_time);
 
@@ -413,10 +413,10 @@ double processSignal() {
     if (tau_temp > tau) {  // threshold check of completed window
 
       // Calculate TOF
-      double TOF = timeArray[start_index];
+      float TOF = timeArray[start_index];
 
       // Calculate distance
-      double distance = speed_of_sound * (TOF / 1e6) / 2.0;  // Assuming one-way travel
+      float distance = speed_of_sound * (TOF / 1e6) / 2.0;  // Assuming one-way travel
 
       // Return distance
       return distance;
@@ -433,7 +433,7 @@ double processSignal() {
   }
 }
 
-double processSignalCC() {
+float processSignalCC() {
 
   // Generate time array
   sampling_period_us = (1.0 / samplingFreq) * 1e6;
@@ -442,9 +442,9 @@ double processSignalCC() {
   }
 
   // Compute the maximum magnitude of vReal
-  double max_magnitude = 0;
+  float max_magnitude = 0;
   for (int i = 0; i < numSamples; i++) {
-    double magnitude = vReal[i];
+    float magnitude = vReal[i];
     if (magnitude > max_magnitude) {
       max_magnitude = magnitude;
     }
@@ -456,12 +456,12 @@ double processSignalCC() {
   }
 
   // Calculate the sum of all elements
-  double sum = 0.0;
+  float sum = 0.0;
   for (int i = 0; i < numSamples; i++) {
     sum += vReal[i];
   }
 
-  double mean = sum / numSamples;
+  float mean = sum / numSamples;
 
   // Subtract the mean from each element in the array
   for (int i = 0; i < numSamples; i++) {
@@ -476,8 +476,8 @@ double processSignalCC() {
 
   // Calculate Hanning window
   for (int i = 0; i < signal_length; i++) {
-    double x = (double)i / (signal_length - 1);
-    double y = 0.5 * (1 + cos((x - 0.5) / (0.5) * PI));
+    float x = (double)i / (signal_length - 1);
+    float y = 0.5 * (1 + cos((x - 0.5) / (0.5) * PI));
     hanning_window[i] = y * ((x >= (0.0)) && (x <= (1.0)));
   }
 
@@ -488,10 +488,10 @@ double processSignalCC() {
 
   // Remove transmitting signal from vReal
   int index_trans = 0;
-  double min_trans_time = abs(timeArray[0] - trans_time);
+  float min_trans_time = abs(timeArray[0] - trans_time);
 
   for (int i = 1; i < numSamples; i++) {
-    double current_diff = abs(timeArray[i] - trans_time);
+    float current_diff = abs(timeArray[i] - trans_time);
     if (current_diff < min_trans_time) {
       min_trans_time = current_diff;
       index_trans = i;
@@ -506,13 +506,13 @@ double processSignalCC() {
   // Perform convolution
   for (int k = 0; k < convLength; k++) {
 
-    double total = 0;
+    float total = 0;
     int min_j = max(0, k - (signal_length - 1));
     int max_j = min(k, numSamples - 1);
 
     for (int j = min_j; j <= max_j; j++) {
 
-      double temp = vReal[j] * input_signal[k - j];
+      float temp = vReal[j] * input_signal[k - j];
       total += temp;
     }
 
@@ -550,8 +550,8 @@ double processSignalCC() {
 
 
   // Find index of TOF (it's at the maximum of abs values in convArray)
-  double conv_current = 0;
-  double conv_peak = 0;
+  float conv_current = 0;
+  float conv_peak = 0;
   int index_tof = 0;
   for (int i = 0; i < convLength; i++) {
     conv_peak = abs(convArray[i]);
@@ -565,8 +565,8 @@ double processSignalCC() {
   // Check if convolution result exceeds set threshold
   if (conv_current > conv_threshold) {
     int index_tof_int = floor((double)(index_tof + 1) / convLength * numSamples);
-    double TOF = timeArray[index_tof_int - 1];
-    double distance = speed_of_sound * (TOF / 1e6) / 2.0;
+    float TOF = timeArray[index_tof_int - 1];
+    float distance = speed_of_sound * (TOF / 1e6) / 2.0;
     return distance;
   } else {
     return 0;
