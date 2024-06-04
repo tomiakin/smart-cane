@@ -1,0 +1,9 @@
+Project Summary:
+
+White canes are a widespread mobility aid for Visually Impaired Persons (VIPs) that provide tactile feedback of upcoming obstacles by successively sweeping an area in front of the user. Whilst existing white canes enable a good range of independent mobility for VIPs once a route is learned, objects above the waist level - especially those that change over time such as vegetation or signage - present an undetectable obstruction and limit the functionality & reliance upon the white cane as a mobility device. Existing ’smart-cane’ products are available on the market, however these frequently incorpo- rate a wide range of features accessed via advanced interfaces. The vast majority of VIPs in the UK are classified as elderly, correlating with barriers to the use of new, functionally complex, technology.
+
+The project establishes the market need for a low-tech Electronic Travel Aid (ETA), providing above-waist obstacle detection from an ergonomic tactile user interface, targeting the elderly market. A prototype solution utilising ultrasonic ranging was developed, able to detect common obstacles between 400-1500 mm in front of the user, and transmit feedback to the user via a wearable haptic band. This prototype is verified against the requirement set via testing. Simultaneously, the ergonomic housing of the device was designed. The resulting prototype designs are used to establish a framework for future work in progression to a production stage.
+
+Code Summary:
+
+The file Teensy_chirp.ino is the main higlihht of this repo, it handles the processing of the ultrasonic waves reflected from any obstacles. This processing is necessary to accurately determine the Time of Flight and subsequently, the distance to the obstacle. The processing functions are specifically named processSignalSW and processSignalCC.
